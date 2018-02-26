@@ -4,11 +4,9 @@ import java.awt.event.*;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.*;
 import com.jogamp.opengl.util.*;
-
-import ch.fhnw.util.math.Mat4;
-
 import com.jogamp.common.nio.*;
 import java.nio.*;
+import ch.fhnw.util.math.*;
 
 public class MyFirstGL
        implements WindowListener, GLEventListener
@@ -19,7 +17,7 @@ public class MyFirstGL
     String windowTitle = "JOGL-Application";
     int windowWidth = 800;
     int windowHeight = 600;
-    String vShader = MyShaders.vShader0;                 // Vertex-Shader
+    String vShader = MyShaders.vShader1;                 // Vertex-Shader
     String fShader = MyShaders.fShader0;                 // Fragment-Shader
     Frame frame;
     GLCanvas canvas;                                     // OpenGL Window
@@ -57,16 +55,16 @@ public class MyFirstGL
        else
           System.out. println("Attribute " + attribName + " not enabled");
     }
-    
-    public void setUniforms(GL3 gl, int pgm, Mat4 M, Mat4 P)
-    {
-     // ----- get shader variable identifiers
-        int MId = gl.glGetUniformLocation(pgm, "M");
-        int PId = gl.glGetUniformLocation(pgm, "P");
-        // ----- set uniform variables
-        gl.glUniformMatrix4fv(MId, 1, false, M.toArray(), 0);        
-    }
 
+    public void setUniforms(GL3 gl, int pgm,
+    		     Mat4 M, Mat4 P)
+    {  int MId = gl.glGetUniformLocation(pgm, "M");
+       int PId = gl.glGetUniformLocation(pgm, "P");	
+       gl.glUniformMatrix4fv(MId,1,false,M.toArray(),0);
+       gl.glUniformMatrix4fv(PId,1,false,P.toArray(),0);
+    }
+    
+    
     public MyFirstGL()                                   // Konstruktor
     { createFrame();
     }
@@ -128,14 +126,14 @@ public class MyFirstGL
     @Override
     public void display(GLAutoDrawable drawable)
     { GL3 gl = drawable.getGL().getGL3();
-      gl.glClear(GL3.GL_COLOR_BUFFER_BIT);                       // Bildschirm loeschen
-      
-      Mat4 M = Mat4.translate(0.4f, 0, 0);
-      Mat4 P = Mat4.ortho(-4, 4, -3, 3, -10, 1000);
-      
-      setUniforms(gl, programId, M, P);
+      gl.glClear(GL3.GL_COLOR_BUFFER_BIT);      // Bildschirm loeschen
+      Mat4 M = Mat4.ID;
+      Mat4 P = Mat4.ortho(-4,4,-3,3,-10,1000);
+      setUniforms(gl,programId,M,P);
       zeichneStrecke(gl,-1,0,0, 1,0,0, 0.7f,0.7f,0.7f);               // x-Achse
       zeichneStrecke(gl,0,-1,0, 0,1,0, 0.7f,0.7f,0.7f);               // y-Achse
+      M = Mat4.translate(0.4f,0,0);
+      setUniforms(gl,programId,M,P);
       zeichneDreieck(gl,-0.5f,0,0, 0.5f,0,0, 0,0.8f,0, 1,0,0);
     }
 
