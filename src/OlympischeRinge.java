@@ -28,7 +28,7 @@ public class OlympischeRinge implements WindowListener, GLEventListener {
     }
     
     public void zeichneKreisring(GL3 gl, double r1, double r2, double red, double green, double blue, int nPunkte) {
-    	double alpha = (2*Math.PI)/nPunkte;
+    	double alpha = (2*Math.PI)/(double)nPunkte;
     	nPunkte += 2; //man braucht 2 Vertices, die das letzte dreieck zeichnen
     	float[] vb = new float[nPunkte*12];
     	float x, y;
@@ -43,15 +43,15 @@ public class OlympischeRinge implements WindowListener, GLEventListener {
     		}
     		vb[i*12]    = x;
     		vb[i*12+ 1] = y;
-    		vb[i*12+ 2] = 0;
+    		vb[i*12+ 2] = 0; // z- Achse
     		vb[i*12+ 3] = 1;
     		vb[i*12+ 4] = (float) red;
     		vb[i*12+ 5] = (float) green;
     		vb[i*12+ 6] = (float) blue;
-    		vb[i*12+ 7] = 1;
-    		vb[i*12+ 8] = 0;
-    		vb[i*12+ 9] = 0;
-    		vb[i*12+10] = 1;
+    		vb[i*12+ 7] = 1;  // Alpha
+    		vb[i*12+ 8] = 0;  // Norm X
+    		vb[i*12+ 9] = 0;  // Norm Y
+    		vb[i*12+10] = 1;  // Norm Z
     		vb[i*12+11] = 0;
     	}
     	gl.glBufferData(GL3.GL_ARRAY_BUFFER, vb.length*Float.SIZE/8,Buffers.newDirectFloatBuffer(vb), GL3.GL_STATIC_DRAW);
@@ -93,7 +93,7 @@ public class OlympischeRinge implements WindowListener, GLEventListener {
     public void createFrame() {  
     	Frame f = new Frame(windowTitle);
         f.setSize(windowWidth, windowHeight);
-        f.setResizable(false);
+        //f.setResizable(false);
         f.addWindowListener(this);
         GLProfile glp = GLProfile.get(GLProfile.GL3);
         GLCapabilities glCaps = new GLCapabilities(glp);
@@ -111,7 +111,7 @@ public class OlympischeRinge implements WindowListener, GLEventListener {
         System.out.println();
         programId = MyShaders.initShaders(gl,vShader,fShader);
         setupVertexBuffer(gl, programId); 
-        gl.glClearColor(0,0,1,1);
+        gl.glClearColor(1,1,1,1);
     }
 
     @Override
@@ -119,20 +119,33 @@ public class OlympischeRinge implements WindowListener, GLEventListener {
        GL3 gl = drawable.getGL().getGL3();
        gl.glClear(GL3.GL_COLOR_BUFFER_BIT);
        
-       Mat4 P = Mat4.ortho(-2,4,-3,3,-10,1000);
+       Mat4 P = Mat4.ortho(-2,4,-3,3,-10,360);
        Mat4 M;
        
-       for(int i = 1; i <= 3; i++) {
-    	   M = Mat4.translate(-1f + 1*i,0,0);
-    	   setUniforms(gl, programId, M, P);
-    	   zeichneKreisring(gl, 0.4, 0.075, 1, 0, 0, 1000);
-       }
+       // Blue Ring
+       M = Mat4.translate(-1f + 1,0,0);
+       setUniforms(gl, programId, M, P);
+       zeichneKreisring(gl, 0.4, 0.075, 0, 0, 1, 360);
        
-       for(int i = 0; i < 2; i++) {
-    	   M = Mat4.translate(0.5f + i,-0.5f,0);
-    	   setUniforms(gl, programId, M, P);
-    	   zeichneKreisring(gl, 0.4, 0.075, 0, 1, 0, 1000);
-       }
+       // Black Ring
+       M = Mat4.translate(-1f + 2,0,0);
+       setUniforms(gl, programId, M, P);
+       zeichneKreisring(gl, 0.4, 0.075, 0, 0, 0, 360);
+       
+       // Red Ring
+       M = Mat4.translate(-1f + 3,0,0);
+       setUniforms(gl, programId, M, P);
+       zeichneKreisring(gl, 0.4, 0.075, 1, 0, 0, 360);
+       
+       // Yellow Ring
+       M = Mat4.translate(0.5f,-0.5f,0);
+       setUniforms(gl, programId, M, P);
+       zeichneKreisring(gl, 0.4, 0.075, 1, 1, 0, 360);
+       
+       // Green Ring
+       M = Mat4.translate(1.5f,-0.5f,0);
+       setUniforms(gl, programId, M, P);
+       zeichneKreisring(gl, 0.4, 0.075, 0, 1, 0, 360);
     }
 
     @Override
