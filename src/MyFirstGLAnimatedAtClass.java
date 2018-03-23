@@ -8,13 +8,13 @@ import com.jogamp.common.nio.*;
 import java.nio.*;
 import ch.fhnw.util.math.*;
 
-public class MySecondGL
+public class MyFirstGLAnimatedAtClass
        implements WindowListener, GLEventListener
 {
 
     //  ---------  globale Daten  ---------------------------
 
-    String windowTitle = "MySecondGL";
+    String windowTitle = "JOGL-Application";
     int windowWidth = 800;
     int windowHeight = 600;
     String vShader = MyShaders.vShader1;                 // Vertex-Shader
@@ -22,6 +22,7 @@ public class MySecondGL
     Frame frame;
     GLCanvas canvas;                                     // OpenGL Window
     int programId;                                       // OpenGL-Id
+    float angle;
 
 
     //  ---------  Methoden  --------------------------------
@@ -65,7 +66,7 @@ public class MySecondGL
     }
     
     
-    public MySecondGL()                                   // Konstruktor
+    public MyFirstGLAnimatedAtClass()                                   // Konstruktor
     { createFrame();
     }
 
@@ -120,38 +121,33 @@ public class MySecondGL
        programId = MyShaders.initShaders(gl,vShader,fShader);
        setupVertexBuffer(gl, programId);                 // Vertex-Buffer
        gl.glClearColor(0,0,1,1);                         // Hintergrund-Farbe
+       
+       FPSAnimator anim;
+       anim = new FPSAnimator(canvas, 300, true);
+       anim.start();       
     }
-
+    
+    float phi = 0;
 
     @Override
     public void display(GLAutoDrawable drawable)
     { 
       GL3 gl = drawable.getGL().getGL3();
-      
-      // ---- Sichtbarkeitstest
-      gl.glEnable(GL3.GL_DEPTH_TEST);
-      gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);      // Bildschirm loeschen
-      
-      // ---- Projektionsmatrix
-      float xleft = -4, xright = 4;
-      float ybottom = -3, ytop = 3;
-      float znear = -100, zfar = 1000;
-      Mat4 P = Mat4.ortho(xleft, xright, ybottom, ytop, znear, zfar);
-      
-      // ---- Kamera-System
-      Vec3 eye = new Vec3(2,1,3);               // Kamera- Pos(Auge)
-      Vec3 target = new Vec3(0,0,0);            // Zielpunkt
-      Vec3 up = new Vec3(0,1,0);                // up- Richtung
-      Mat4 M = Mat4.lookAt(eye, target, up);
-      
+      gl.glClear(GL3.GL_COLOR_BUFFER_BIT);      // Bildschirm loeschen
+      Mat4 M = Mat4.ID;
+      Mat4 P = Mat4.ortho(-4,4,-3,3,-10,1000);
       setUniforms(gl,programId,M,P);
       
-      float len = 4;
-      zeichneStrecke(gl,0,0,0, len,0,0, 0.7f,0.7f,0.7f);          // x-Achse
-      zeichneStrecke(gl,0,0,0, 0,len,0, 0.7f,0.7f,0.7f);          // y-Achse
-      zeichneStrecke(gl,0,0,0, 0,0,len, 0.7f,0.7f,0.7f);          // z-Achse
-      zeichneStrecke(gl,-1,3,5, 2,-0.5f,-4, 1,1,1);
-      zeichneDreieck(gl,0,0.3f,0.3f, 2.5f,0.8f,1, 0.5f,1.5f,-1, 1, 0, 0);         
+      zeichneStrecke(gl,-1,0,0, 1,0,0, 0.7f,0.7f,0.7f);               // x-Achse
+      zeichneStrecke(gl,0,-1,0, 0,1,0, 0.7f,0.7f,0.7f);               // y-Achse
+      M = Mat4.rotate(-phi, 0, 0, 1);
+      M = M.preMultiply(Mat4.translate(2f, 0,0));                   // Bewege auf x- Achse um 2 nach rechts
+      M = M.preMultiply(Mat4.rotate(phi,0,0,1));
+      
+      phi++;
+      
+      setUniforms(gl,programId,M,P);
+      zeichneDreieck(gl,-0.5f,0,0, 0.5f,0,0, 0,0.8f,0, 1,0,0);
     }
 
 
@@ -171,7 +167,7 @@ public class MySecondGL
     //  -----------  main-Methode  ---------------------------
 
     public static void main(String[] args)
-    { new MySecondGL();
+    { new MyFirstGLAnimatedAtClass();
     }
 
     //  ---------  Window-Events  --------------------

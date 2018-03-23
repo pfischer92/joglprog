@@ -6,8 +6,8 @@ import com.jogamp.opengl.awt.*;
 import com.jogamp.opengl.util.*;
 import ch.fhnw.util.math.*;
 
-public class MyFirst3D
-       implements WindowListener, GLEventListener
+public class MyFirst3DInteractiveCameraControl
+       implements WindowListener, GLEventListener, KeyListener
 {
 
     //  ---------  globale Daten  ---------------------------
@@ -29,11 +29,13 @@ public class MyFirst3D
     float xleft=-4, xright=4;                            // ViewingVolume
     float ybottom, ytop;
     float znear=-100, zfar=1000;
+    
+    float azimut = 30, elevation = 10;
 
 
     //  ---------  Methoden  --------------------------------
 
-    public MyFirst3D()                                   // Konstruktor
+    public MyFirst3DInteractiveCameraControl()                                   // Konstruktor
     { createFrame();
     }
 
@@ -48,6 +50,8 @@ public class MyFirst3D
        canvas.addGLEventListener(this);
        f.add(canvas);
        f.setVisible(true);
+       f.addKeyListener(this);
+       canvas.addKeyListener(this);
     };
 
 
@@ -117,10 +121,17 @@ public class MyFirst3D
       gl.glClear(GL3.GL_COLOR_BUFFER_BIT | GL3.GL_DEPTH_BUFFER_BIT);
 
       // -----  Kamera-System
-      Vec3 A = new Vec3(2,1,3);                                   // Kamera-Pos. (Auge)
+      Vec3 A = new Vec3(0,0,3);                                   // Kamera-Pos. (Auge)
       Vec3 B = new Vec3(0,0,0);                                   // Zielpunkt
       Vec3 up = new Vec3(0,1,0);                                  // up-Richtung
-      Mat4 M = Mat4.lookAt(A,B,up);
+      
+      Mat4 R1 = Mat4.rotate(-elevation, 1,0,0);
+      Mat4 R2 = Mat4.rotate(azimut, 0,1,0);
+      Mat4 R = R2.postMultiply(R1);                               // R2*R1
+      
+          
+     
+      Mat4 M = Mat4.lookAt(R.transform(A), R.transform(B), R.transform(up));
       mygl.setM(gl,M);
       
       // Irgendwas für die Beleuchtung....
@@ -165,7 +176,7 @@ public class MyFirst3D
     //  -----------  main-Methode  ---------------------------
 
     public static void main(String[] args)
-    { new MyFirst3D();
+    { new MyFirst3DInteractiveCameraControl();
     }
 
     //  ---------  Window-Events  --------------------
@@ -180,5 +191,43 @@ public class MyFirst3D
     public void windowDeiconified(WindowEvent e) {  }
     public void windowIconified(WindowEvent e) {  }
     public void windowOpened(WindowEvent e) {  }
+
+
+    //  ---------  Keyboard-Events  --------------------
+    
+    @Override
+    public void keyPressed(KeyEvent arg0) {
+        int code = arg0.getKeyCode();
+        switch(code) {
+            case KeyEvent.VK_UP:
+                elevation++;
+                break;
+            case KeyEvent.VK_RIGHT:
+                azimut++;
+                break;
+            case KeyEvent.VK_DOWN:
+                elevation--;
+                break;
+            case KeyEvent.VK_LEFT:
+                azimut--;
+                break;
+        }
+        canvas.repaint();
+        
+    }
+
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+        // TODO Auto-generated method stub
+        
+    }
 
 }
